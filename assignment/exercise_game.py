@@ -10,7 +10,7 @@ import json
 
 N: int = 3
 sample_ms = 10.0
-on_ms = 500
+on_ms = 1000
 
 
 def random_time_interval(tmin: float, tmax: float) -> float:
@@ -75,8 +75,7 @@ if __name__ == "__main__":
     # using "if __name__" allows us to reuse functions in other script files
 
     led = Pin("LED", Pin.OUT)
-    button = Pin(16, Pin.IN, Pin.PULL_UP)
-
+    button = Pin(12, Pin.IN, Pin.PULL_UP)
     t: list[int | None] = []
 
     blinker(3, led)
