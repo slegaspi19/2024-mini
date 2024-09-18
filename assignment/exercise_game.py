@@ -6,12 +6,24 @@ from machine import Pin
 import time
 import random
 import json
+import os
+import network
+import urequests
 
+wlan = network.WLAN(network.STA_IF)
+if not wlan.active() or not wlan.isconnected():
+  wlan.active(True)
+  wlan.connect("BU Guest (unencrypted)", "")
+  while not wlan.isconnected():
+    pass
 
-N: int = 3
+N: int = 10
 sample_ms = 10.0
 on_ms = 1000
 
+with open('secrets.json') as fp:
+    secrets = json.loads(fp.read())
+url = "https://slegaspi-ec463-mini-project-default-rtdb.firebaseio.com/game.json?auth=" + secrets['token']
 
 def random_time_interval(tmin: float, tmax: float) -> float:
     """return a random time interval between max and min"""
@@ -51,13 +63,13 @@ def scorer(t: list[int | None]) -> None:
     print(f"You missed the light {misses} / {len(t)} times")
 
     t_good = [x for x in t if x is not None]
-
+    if not len(t_good): return
     print(t_good)
 
     # add key, value to this dict to store the minimum, maximum, average response time
     # and score (non-misses / total flashes) i.e. the score a floating point number
     # is in range [0..1]
-    data = {}
+    data = {"minimum": min(t_good), "maximum": max(t_good), "average": sum(t_good)/len(t_good), "score": len(t_good)/len(t)}
 
     # %% make dynamic filename and write JSON
 
@@ -69,6 +81,8 @@ def scorer(t: list[int | None]) -> None:
     print("write", filename)
 
     write_json(filename, data)
+    
+    urequests.post(url, data=json.dumps(data))
 
 
 if __name__ == "__main__":
